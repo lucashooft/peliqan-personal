@@ -35,7 +35,7 @@ else:  # Running outside of Peliqan
 ##### SETTINGS
 
 # Provider
-PROVIDER = "Peliqan" # "Google", "Microsoft" or "Peliqan"
+PROVIDER = "Microsoft" # "Google", "Microsoft" or "Peliqan"
 
 # Peliqan account id
 peliqan_account_id = 3166
@@ -52,14 +52,17 @@ google_client_id = "75886851179-su9mknnnf3f3sm2fi53fq7viobkjedod.apps.googleuser
 tenant_id = "a35e450d-10f3-43ec-bbb5-4f370161c30c"
 
 # Microsoft token verification config:
-MICROSOFT_EXPECTED_AUDIENCE = "REPLACE_WITH_YOUR_APP_ID_URI"
+MICROSOFT_EXPECTED_AUDIENCE = "https://api.eu.peliqan.io/3166/mcp"
 
 try:
     import jwt
     from jwt import PyJWKClient
     ms_jwks_client = PyJWKClient(f"https://login.microsoftonline.com/{tenant_id}/discovery/v2.0/keys")
     ms_jwks_client.get_jwk_set()   # forces a real fetch now, at load time -- fails fast if tenant_id is garbage
-    MICROSOFT_ISSUER = f"https://login.microsoftonline.com/{tenant_id}/v2.0"
+    MICROSOFT_ISSUERS = (
+        f"https://sts.windows.net/{tenant_id}/",         # v1.0 tokens
+        f"https://login.microsoftonline.com/{tenant_id}/v2.0",  # v2.0 tokens
+    )
 except Exception:
     ms_jwks_client = None
     print(f"Warning: Microsoft JWKS unreachable with tenant_id={tenant_id!r} -- Microsoft provider disabled")
@@ -358,8 +361,9 @@ def microsoft_access_token(access_token):
             signing_key.key,
             algorithms=["RS256"],
             audience=MICROSOFT_EXPECTED_AUDIENCE,
-            issuer=MICROSOFT_ISSUER,
         )
+        if claims.get("iss") not in MICROSOFT_ISSUERS:
+            return None
     except Exception:
         return None
 

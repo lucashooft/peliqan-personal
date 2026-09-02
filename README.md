@@ -19,66 +19,17 @@ with and the API token it syncs against stay separate.
    General → Template repository*. Without it, `git clone` this repo, delete
    `.git`, and `git init` fresh instead — same result, more steps.)
 
-2. **Let the init workflow run.** `.github/workflows/init.yml` fires on the
-   first push to `main` in your new repo and does two things: adds the shared
-   Claude skills repo as a submodule at `.claude`, and deletes itself. Check
-   the *Actions* tab; if nothing ran, Actions is disabled for the repo and you
-   need to enable it (*Settings → Actions → General*).
-
-   The workflow commits as `github-actions[bot]` and pushes, so `main` will be
-   one or two commits ahead of whatever you cloned. Pull before your next
-   push.
-
-3. **Clone your new repo with the submodule:**
+2. **Clone your new repo:**
 
    ```powershell
-   git clone --recurse-submodules https://github.com/<you>/<your-repo>.git
+   git clone https://github.com/<you>/<your-repo>.git
    ```
 
-   Already cloned without it (empty `.claude/`)? Fill it in:
-
-   ```powershell
-   git submodule update --init --recursive
-   ```
+3. **Install the shared Claude Code skills as a plugin.** They're distributed
+   from a separate repo, not bundled into this template — see that repo's own
+   install instructions.
 
 4. Continue with [Setup](#setup) below — token, then first fetch.
-
-## Updating the `.claude` submodule
-
-`.claude` is a submodule, so your repo doesn't store its files: it stores a
-single commit pointer into
-[`peliqan-agents-skills`](https://github.com/lucashooft/peliqan-agents-skills).
-New skills landing in that repo don't reach yours until you move the pointer.
-
-Pull the latest `main` of the skills repo and commit the new pointer:
-
-```powershell
-git submodule update --remote .claude
-git add .claude
-git commit -m "Update .claude skills submodule"
-git push
-```
-
-`git pull` in your repo updates the *pointer* to whatever a teammate
-committed, but doesn't check the submodule out at it. After any pull that
-touches `.claude`, run:
-
-```powershell
-git submodule update --init --recursive
-```
-
-Or set it once and forget it: `git config submodule.recurse true` makes
-`git pull` update submodule contents automatically.
-
-Notes:
-
-- `git status` showing `.claude` as *modified: new commits* means the pointer
-  and the checked-out commit disagree — either commit the move (you ran
-  `--remote` deliberately) or discard it with
-  `git submodule update -- .claude`.
-- Don't commit inside `.claude` from your repo. Changes to the skills
-  themselves belong in the `peliqan-agents-skills` repo; pull them back here
-  as a pointer update.
 
 ## What's in this repo
 
@@ -90,8 +41,6 @@ Notes:
 | `CLAUDE.md` | Instructions for Claude Code: what not to hand-edit, which commands hit the live account. Copied into each repo made from this template; tailor it per project. |
 | `requirements.txt` | Everything needed to run any script in this repo: `requests` (for fetch/push themselves) plus `peliqan`/`streamlit` (for running a *fetched* Data App script locally via its dev shim). |
 | `.github/workflows/sync-peliqan-scripts.yml` | CI job: runs `push_peliqan_data_apps.py` on every push to `main` that touches `scripts/**.py`. |
-| `.github/workflows/init.yml` | One-shot CI job in a repo made from this template: adds the `.claude` skills submodule, then deletes itself. |
-| `.claude/` | Submodule of shared Claude Code skills, added by `init.yml`. Not present in the template itself. |
 | `scripts/` | Generated on first fetch. Contains one `.py` per Data App plus `.manifest.json`. Don't hand-edit the manifest. |
 
 `scripts/` itself isn't part of this template: it's created the first time

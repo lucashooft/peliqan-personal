@@ -20,9 +20,6 @@ there as production changes, not local experiments.
   Never commit one, and never edit one expecting it to be pushed. Resolve by
   writing the final content into the real file, deleting the `.remote.py`, then
   `push_peliqan_data_apps.py --force`.
-- **`.claude/`** — a git submodule (shared skills, separate repo). Don't create
-  or edit files there from this repo; update the pointer instead
-  (`git submodule update --remote .claude`).
 - **The dev shim at the top of each fetched script** — the ~20 lines starting
   `if 'RUN_CONTEXT' in globals():`. It's prepended by `fetch`, stripped by
   `push`, and expected byte-for-byte (see `LOCAL_DEV_SHIM` in
