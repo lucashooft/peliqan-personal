@@ -37,6 +37,14 @@ APP_EMBED_CONFIG = {
         "embed_url": "https://app.eu.peliqan.io/apps/UmJ5N1RUa212UlA5SDlVZjU2Y1AxMTZjTlhDMkJGVFRRWGZ4Z1lQYklqZU1RR1JUdkFXZjBRd0Rya2RTMlB1Vg==/",
         "secret_key": "zfOTay78eclh7gRzur2wJmrMIJzgzY68pA4RFjYpHFcBnhZFdfav742SAlfEA99n",
     },
+    11542: {
+        "embed_url": "https://app.eu.peliqan.io/apps/ckU0MmxoeFA3Mkd0dFFIb2dvY0JwdmZQcmxCTzVKYkM2TnU1emhEbnlQVW1yaHpCTmVjdkRQQmxTaEZwbHBDOQ==/",
+        "secret_key": "8KOjFdGZ3FU1BAcR7caYXOTdQOb5ukY4NNcZwRiXzMbPzXaYh1QLedgzrgXzGqFk"
+    },
+    10726: {
+        "embed_url": "https://app.eu.peliqan.io/apps/MlJDMU1JM1o3VEZiZWNpenpmYURuamx3czFac09nNG1FdHFIUGJlanJtVGZqM1FNVDVqaTlnRXEwN1F2TThvMQ==/",
+        "secret_key": "j9JrEvNUOCS2eNzGPiXm4wNVkTecQIq8m0jS8SDEJkPla5bcJ7lIR5JS8HJI9p4k"
+    },
 }
 
 def build_session_token(app_id, secret_key):
