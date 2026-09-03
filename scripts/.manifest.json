@@ -114,9 +114,9 @@
   "11888": {
     "filename": "11888_Custom_MCP_OAuth.py",
     "group": 3341,
-    "local_hash": "0651e393996d068bc6822a1295468430b009fb6cff987a167375a8e810d9278e",
+    "local_hash": "05ab9b4747d8f9048a10b4a279a87fc7c4c6eb4c45c384e594f63c548e1ecf1e",
     "name": "Custom MCP OAuth",
-    "remote_hash": "5da2fc016784ce0ea5223ae5b6ffb8e7fed7613c8cec09db47cbe374f3869fbc"
+    "remote_hash": "50eff0a11231ca5d7a50207a20dbb524ed37c7b2e93145af96bb514e495f8838"
   },
   "12035": {
     "filename": "12035_Custom_MCP_Access_Levels.py",
@@ -131,5 +131,19 @@
     "local_hash": "57cc4abb6a66f06fb3985aaa8dd39d9655478bf33acdf031b1f22038ac173a00",
     "name": "Custom MCP Intent",
     "remote_hash": "c839e9046ad3d67e19a4f16ddf68c978a33af6970a183c5d3a3ce0ec248e5b10"
+  },
+  "12846": {
+    "filename": "12846_Deloitte_main.py",
+    "group": 3341,
+    "local_hash": "a9bdbb611fa0fdc0c44efb2190609c3de71c8aa7968cc0176299de5827165ee9",
+    "name": "Deloitte_main",
+    "remote_hash": "5602027e0af08952bdd17ad45cc770b9e4a7357cf0961dd9bae9c1a2df61da61"
+  },
+  "12847": {
+    "filename": "12847_Embed_test.py",
+    "group": 3341,
+    "local_hash": "90c41f6d33c6b0f8596ccfbc3c2456df3690b8e821cd654ad817afd862c1c619",
+    "name": "Embed_test",
+    "remote_hash": "6b0d7c94f7b3ad98ea2015c19d44dfc6adf61386d66166eaf214e085214d49be"
   }
 }

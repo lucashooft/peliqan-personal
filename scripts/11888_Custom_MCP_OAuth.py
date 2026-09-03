@@ -42,7 +42,7 @@ peliqan_account_id = 3166
 
 # Add the usernames, and as value the personal API key from Peliqan (See user settings > API token). Store API keys in the Peliqan Secrets store !
 user_mappings = {
-    "lucas@peliqan.io": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imx1Y2FzQHBlbGlxYW4uaW8iLCJpYXQiOjE3ODYwMjE2OTIsImV4cCI6MjY0OTkzNTI5MiwianRpIjoiZmYzMmU3ZWQtOGUyYi00ZGU4LTgzMDMtNzcwZmNmMzE1MjcwIiwidXNlcl9pZCI6NDY3OCwidXNlcl9wcm9maWxlX2lkIjpbNDY3NF0sIm9yaWdfaWF0IjoxNzg2MDIxNjkyLCJ0b2tlbl9uYW1lIjoiZ2VuZXJhdGVkX2J5X3VzZXIifQ.T7fNrTQ0wWM3YCJZFB-koFFX4C0gJ1YC82AP6BtTMq0",
+    "test@peliqan.io": "INSERT YOUR PELIQAN API KEY HERE",
 }
 
 # Google client id:
@@ -52,7 +52,7 @@ google_client_id = "75886851179-su9mknnnf3f3sm2fi53fq7viobkjedod.apps.googleuser
 tenant_id = "a35e450d-10f3-43ec-bbb5-4f370161c30c"
 
 # Microsoft token verification config:
-MICROSOFT_EXPECTED_AUDIENCE = "https://api.eu.peliqan.io/3166/mcp"
+MICROSOFT_EXPECTED_AUDIENCE = f"https://api.eu.peliqan.io/{peliqan_account_id}/mcp"
 
 try:
     import jwt
