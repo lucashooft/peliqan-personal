@@ -45,6 +45,23 @@ user_mappings = {
     "test@peliqan.io": "INSERT YOUR PELIQAN API KEY HERE",
 }
 
+# Fallback for users not listed individually above: map a group the user belongs to
+# (in the active PROVIDER) to a Peliqan API key. First matching group wins.
+# - Microsoft: group object IDs from the token's "groups" claim -- requires the Azure AD
+#   app registration to be configured to emit it (App registration > Token configuration
+#   > Add groups claim). Without that, no groups claim is present and this is skipped.
+# - Google: group email addresses, looked up via the Admin SDK Directory API -- requires
+#   GOOGLE_SERVICE_ACCOUNT_JSON and google_admin_impersonate_email below to be configured.
+# - Peliqan: group/team names from the userinfo response (field name unconfirmed --
+#   check the printed userinfo the first time a Peliqan user logs in).
+group_mappings = {
+    "INSERT GROUP ID / EMAIL / NAME HERE": "INSERT PELIQAN API KEY HERE",
+}
+
+# Google Workspace admin user to impersonate for the group-membership lookup (domain-wide
+# delegation). Leave "" to disable Google group lookup (falls back to user_mappings only).
+google_admin_impersonate_email = ""
+
 # Google client id:
 google_client_id = "75886851179-su9mknnnf3f3sm2fi53fq7viobkjedod.apps.googleusercontent.com"
 
@@ -324,8 +341,52 @@ def peliqan_access_token(access_token):
     if not username:
         return None
     print(f"Peliqan email address from token: {username}")
-    return username
-    
+    print(f"Peliqan userinfo (check here for the groups/teams field name): {userinfo}")
+    groups = userinfo.get("groups") or userinfo.get("teams") or []
+    return username, groups
+
+def get_google_groups(user_email):
+    """Look up a user's Google Workspace group membership via the Admin SDK Directory
+    API, using a service account with domain-wide delegation (impersonating
+    google_admin_impersonate_email). Returns [] if not configured or on any error.
+    """
+    if not google_admin_impersonate_email:
+        return []
+    import time
+    import requests
+    try:
+        service_account_info = json.loads(pq.get_secret("GoogleServiceAccountJSON"))
+        now = int(time.time())
+        assertion = jwt.encode(
+            {
+                "iss": service_account_info["client_email"],
+                "scope": "https://www.googleapis.com/auth/admin.directory.group.readonly",
+                "aud": "https://oauth2.googleapis.com/token",
+                "iat": now,
+                "exp": now + 3600,
+                "sub": google_admin_impersonate_email,  # required for domain-wide delegation
+            },
+            service_account_info["private_key"],
+            algorithm="RS256",
+        )
+        token_response = requests.post("https://oauth2.googleapis.com/token", data={
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "assertion": assertion,
+        })
+        token_response.raise_for_status()
+        admin_access_token = token_response.json()["access_token"]
+
+        groups_response = requests.get(
+            "https://admin.googleapis.com/admin/directory/v1/groups",
+            params={"userKey": user_email},
+            headers={"Authorization": f"Bearer {admin_access_token}"},
+        )
+        groups_response.raise_for_status()
+        return [g["email"] for g in groups_response.json().get("groups", [])]
+    except Exception as e:
+        print(f"Warning: Google group lookup failed for {user_email}: {e}")
+        return []
+
 def google_access_token(access_token):
     import requests
     try:
@@ -334,7 +395,7 @@ def google_access_token(access_token):
             params={
                 "access_token": access_token
             }
-        )        
+        )
         response.raise_for_status()
         tokeninfo = response.json()
     except Exception:
@@ -349,7 +410,8 @@ def google_access_token(access_token):
         return None
     print(f"Google email address from token: {username}")
 
-    return username
+    groups = get_google_groups(username)
+    return username, groups
 
 def microsoft_access_token(access_token):
     if ms_jwks_client is None:
@@ -371,28 +433,40 @@ def microsoft_access_token(access_token):
     if not username:
         return None
     print(f"Azure username from token: {username}")
-    
-    return username
+
+    # ponytail: doesn't handle Azure AD's "groups overage" case (200+ groups), where the
+    # token omits actual groups and points at Graph API instead -- add a Graph /me/memberOf
+    # call here if that ever applies to you.
+    groups = claims.get("groups", [])
+    return username, groups
 
 def check_access_token(access_token):
     global pq_personal
 
     if PROVIDER == "Google":
-        username = google_access_token(access_token)
+        result = google_access_token(access_token)
     elif PROVIDER == "Microsoft":
-        username = microsoft_access_token(access_token)
+        result = microsoft_access_token(access_token)
     elif PROVIDER == "Peliqan":
-        username = peliqan_access_token(access_token)
+        result = peliqan_access_token(access_token)
     else:
         return None
-  
-    if username not in user_mappings:
+
+    if not result:
         return None
-    else:
-        # Apply user impersonation
+    username, groups = result
+
+    if username in user_mappings:
         user_peliqan_api_key = user_mappings[username]
-        pq_personal = Peliqan(user_peliqan_api_key)
-      
+    else:
+        # Fall back to the first group the user belongs to that has a mapping
+        user_peliqan_api_key = next((group_mappings[g] for g in groups if g in group_mappings), None)
+
+    if not user_peliqan_api_key:
+        return None
+
+    # Apply user impersonation
+    pq_personal = Peliqan(user_peliqan_api_key)
     return username
     
 def handler(request):
