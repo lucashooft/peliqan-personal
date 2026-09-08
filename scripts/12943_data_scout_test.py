@@ -31,7 +31,7 @@ st.text("Lorem ipsum.")
 dbconn = pq.dbconnect(pq.DW_NAME)
 
 # fetch records from a table in the data warehouse
-rows = dbconn.fetch(pq.DW_NAME, 'data_scout_state', 'conversations')
+rows = dbconn.fetch(pq.DW_NAME, 'public', 'pg_stat_kcache')
 
 # Show the results as a dataframe
 st.dataframe(rows)

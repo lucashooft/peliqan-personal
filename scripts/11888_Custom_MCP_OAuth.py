@@ -35,14 +35,14 @@ else:  # Running outside of Peliqan
 ##### SETTINGS
 
 # Provider
-PROVIDER = "Microsoft" # "Google", "Microsoft" or "Peliqan"
+PROVIDER = "Peliqan" # "Google", "Microsoft" or "Peliqan"
 
 # Peliqan account id
 peliqan_account_id = 3166
 
 # Add the usernames, and as value the personal API key from Peliqan (See user settings > API token). Store API keys in the Peliqan Secrets store !
 user_mappings = {
-    "test@peliqan.io": "INSERT YOUR PELIQAN API KEY HERE",
+    "lucas@peliqan.io": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imx1Y2FzQHBlbGlxYW4uaW8iLCJpYXQiOjE3ODYwMjE2OTIsImV4cCI6MjY0OTkzNTI5MiwianRpIjoiZmYzMmU3ZWQtOGUyYi00ZGU4LTgzMDMtNzcwZmNmMzE1MjcwIiwidXNlcl9pZCI6NDY3OCwidXNlcl9wcm9maWxlX2lkIjpbNDY3NF0sIm9yaWdfaWF0IjoxNzg2MDIxNjkyLCJ0b2tlbl9uYW1lIjoiZ2VuZXJhdGVkX2J5X3VzZXIifQ.T7fNrTQ0wWM3YCJZFB-koFFX4C0gJ1YC82AP6BtTMq0",
 }
 
 # Fallback for users not listed individually above: map a group the user belongs to
