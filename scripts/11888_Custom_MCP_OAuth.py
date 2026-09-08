@@ -40,20 +40,23 @@ PROVIDER = "Peliqan" # "Google", "Microsoft" or "Peliqan"
 # Peliqan account id
 peliqan_account_id = 3166
 
+# Only used for the Google/Microsoft providers -- Peliqan's own OAuth access token is
+# already a valid Peliqan API token, so this is never consulted when PROVIDER == "Peliqan".
 # Add the usernames, and as value the personal API key from Peliqan (See user settings > API token). Store API keys in the Peliqan Secrets store !
 user_mappings = {
-    "lucas@peliqan.io": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imx1Y2FzQHBlbGlxYW4uaW8iLCJpYXQiOjE3ODYwMjE2OTIsImV4cCI6MjY0OTkzNTI5MiwianRpIjoiZmYzMmU3ZWQtOGUyYi00ZGU4LTgzMDMtNzcwZmNmMzE1MjcwIiwidXNlcl9pZCI6NDY3OCwidXNlcl9wcm9maWxlX2lkIjpbNDY3NF0sIm9yaWdfaWF0IjoxNzg2MDIxNjkyLCJ0b2tlbl9uYW1lIjoiZ2VuZXJhdGVkX2J5X3VzZXIifQ.T7fNrTQ0wWM3YCJZFB-koFFX4C0gJ1YC82AP6BtTMq0",
+    "test@peliqan.io": "INSERT YOUR PELIQAN API KEY HERE",
 }
 
 # Fallback for users not listed individually above: map a group the user belongs to
 # (in the active PROVIDER) to a Peliqan API key. First matching group wins.
+# Also unused for PROVIDER == "Peliqan" -- and Peliqan's userinfo endpoint doesn't return
+# a groups/teams field at all (confirmed: {'sub', 'name', 'email'} only), so group mapping
+# isn't available for that provider regardless.
 # - Microsoft: group object IDs from the token's "groups" claim -- requires the Azure AD
 #   app registration to be configured to emit it (App registration > Token configuration
 #   > Add groups claim). Without that, no groups claim is present and this is skipped.
 # - Google: group email addresses, looked up via the Admin SDK Directory API -- requires
 #   GOOGLE_SERVICE_ACCOUNT_JSON and google_admin_impersonate_email below to be configured.
-# - Peliqan: group/team names from the userinfo response (field name unconfirmed --
-#   check the printed userinfo the first time a Peliqan user logs in).
 group_mappings = {
     "INSERT GROUP ID / EMAIL / NAME HERE": "INSERT PELIQAN API KEY HERE",
 }
@@ -455,6 +458,12 @@ def check_access_token(access_token):
     if not result:
         return None
     username, groups = result
+
+    if PROVIDER == "Peliqan":
+        # Peliqan's own OAuth access token is already a valid Peliqan API token for this
+        # exact user -- no separate mapping needed.
+        pq_personal = Peliqan(access_token)
+        return username
 
     if username in user_mappings:
         user_peliqan_api_key = user_mappings[username]
