@@ -114,9 +114,9 @@
   "11888": {
     "filename": "11888_Custom_MCP_OAuth.py",
     "group": 3341,
-    "local_hash": "9a56cd357ea184466d6c4e09d8b26f6bf686c1804616e642e4074e539fd6d674",
+    "local_hash": "a62aebe03715bad8f63f48a1edc69d9b7a460a6ba3b620d5d64c8b51573293ac",
     "name": "Custom MCP OAuth",
-    "remote_hash": "bddfb76b6b9cb4fcbc1dccafa79fc4a86c14e1630e4f3d38a3346345f9747b76"
+    "remote_hash": "06d89b33df28391b16d1ef8117e7ff597282871b761edc8ff1aa130214f79c78"
   },
   "12035": {
     "filename": "12035_Custom_MCP_Access_Levels.py",
