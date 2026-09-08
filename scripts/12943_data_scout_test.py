@@ -18,17 +18,33 @@ else:  # Running outside of Peliqan
     except Exception:
         RUN_CONTEXT = "background"
 
-# Access is scoped per Peliqan account via interface_id, since the same
-# source file is deployed separately to each account (no per-account secret
-# needed - interface_id is injected into globals by the platform, and by the
-# local dev shim above). Unknown interface_id -> restricted (fail-safe).
-ACCESS_BY_INTERFACE_ID = {
-    12943: "full",  # lucas@peliqan.io
-    # TODO: fill in with the interface_id this script gets once pushed
-    # to the dstest@peliqan.io account.
-    0: "restricted",  # dstest@peliqan.io
+import base64
+import json
+
+
+def _decode_jwt_claims(token: str) -> dict:
+    """Best-effort read of a JWT payload, no signature check - same trick
+    peliqan-datascout's _decode_access_token_claims uses, since Peliqan's
+    access token carries the logged-in username as a claim but the SDK
+    object itself exposes no email/username field. Never raises."""
+    parts = (token or "").split(".")
+    if len(parts) != 3:
+        return {}
+    try:
+        payload_b64 = parts[1] + "=" * (-len(parts[1]) % 4)
+        return json.loads(base64.urlsafe_b64decode(payload_b64))
+    except Exception:
+        return {}
+
+
+# Access is scoped per logged-in Peliqan account, read from pq.JWT.
+# Unknown/undecodable user -> restricted (fail-safe).
+ACCESS_BY_USERNAME = {
+    "lucas@peliqan.io": "full",
+    "dstest@peliqan.io": "restricted",
 }
-ACCESS_LEVEL = ACCESS_BY_INTERFACE_ID.get(interface_id, "restricted")
+CURRENT_USERNAME = _decode_jwt_claims(pq.JWT).get("username")
+ACCESS_LEVEL = ACCESS_BY_USERNAME.get(CURRENT_USERNAME, "restricted")
 assert ACCESS_LEVEL in ("full", "restricted")
 
 import pandas as pd
