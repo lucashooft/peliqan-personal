@@ -40,25 +40,24 @@ PROVIDER = "Peliqan" # "Google", "Microsoft" or "Peliqan"
 # Peliqan account id
 peliqan_account_id = 3166
 
-# Only used for the Google/Microsoft providers -- Peliqan's own OAuth access token is
-# already a valid Peliqan API token, so this is never consulted when PROVIDER == "Peliqan".
-# Add the usernames, and as value the personal API key from Peliqan (See user settings > API token). Store API keys in the Peliqan Secrets store !
+# Add the usernames, and as value the personal API key from Peliqan (See user settings > API token).
+# Store each key in the Peliqan Secrets store and reference it here via pq.get_secret(...) --
+# never hardcode a real key in this file.
 user_mappings = {
-    "test@peliqan.io": "INSERT YOUR PELIQAN API KEY HERE",
+    "test@peliqan.io": pq.get_secret("<connection_name_with_peliqan_api_key_from_test_user>"),
 }
 
 # Fallback for users not listed individually above: map a group the user belongs to
 # (in the active PROVIDER) to a Peliqan API key. First matching group wins.
-# Also unused for PROVIDER == "Peliqan" -- and Peliqan's userinfo endpoint doesn't return
-# a groups/teams field at all (confirmed: {'sub', 'name', 'email'} only), so group mapping
-# isn't available for that provider regardless.
+# Peliqan's userinfo endpoint doesn't return a groups/teams field at all (confirmed:
+# {'sub', 'name', 'email'} only), so group mapping isn't available for that provider.
 # - Microsoft: group object IDs from the token's "groups" claim -- requires the Azure AD
 #   app registration to be configured to emit it (App registration > Token configuration
 #   > Add groups claim). Without that, no groups claim is present and this is skipped.
 # - Google: group email addresses, looked up via the Admin SDK Directory API -- requires
 #   GOOGLE_SERVICE_ACCOUNT_JSON and google_admin_impersonate_email below to be configured.
 group_mappings = {
-    "INSERT GROUP ID / EMAIL / NAME HERE": "INSERT PELIQAN API KEY HERE",
+    "INSERT GROUP ID / EMAIL / NAME HERE": pq.get_secret("<connection_name_with_peliqan_api_key_for_this_group>"),
 }
 
 # Google Workspace admin user to impersonate for the group-membership lookup (domain-wide
@@ -458,12 +457,6 @@ def check_access_token(access_token):
     if not result:
         return None
     username, groups = result
-
-    if PROVIDER == "Peliqan":
-        # Peliqan's own OAuth access token is already a valid Peliqan API token for this
-        # exact user -- no separate mapping needed.
-        pq_personal = Peliqan(access_token)
-        return username
 
     if username in user_mappings:
         user_peliqan_api_key = user_mappings[username]
