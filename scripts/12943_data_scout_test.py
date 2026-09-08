@@ -18,20 +18,39 @@ else:  # Running outside of Peliqan
     except Exception:
         RUN_CONTEXT = "background"
 
-# Here is some example Python code to get you started.
-# Check the Data activation library section for useful code snippets and supported functions.
+# Access is scoped per Peliqan account via interface_id, since the same
+# source file is deployed separately to each account (no per-account secret
+# needed - interface_id is injected into globals by the platform, and by the
+# local dev shim above). Unknown interface_id -> restricted (fail-safe).
+ACCESS_BY_INTERFACE_ID = {
+    12943: "full",  # lucas@peliqan.io
+    # TODO: fill in with the interface_id this script gets once pushed
+    # to the dstest@peliqan.io account.
+    0: "restricted",  # dstest@peliqan.io
+}
+ACCESS_LEVEL = ACCESS_BY_INTERFACE_ID.get(interface_id, "restricted")
+assert ACCESS_LEVEL in ("full", "restricted")
 
-# Show a title (st = Streamlit module)
+import pandas as pd
+
 st.title("My Table Data")
 
-# Show some text
-st.text("Lorem ipsum.")
-
-# connect to the data warehouse
+# connect to the data warehouse and fetch a table
 dbconn = pq.dbconnect(pq.DW_NAME)
-
-# fetch records from a table in the data warehouse
 rows = dbconn.fetch(pq.DW_NAME, 'public', 'pg_stat_kcache')
+df = pd.DataFrame(rows)
 
-# Show the results as a dataframe
-st.dataframe(rows)
+# Everyone gets the summary charts.
+st.subheader("Summary")
+numeric_cols = df.select_dtypes("number").columns.tolist()
+if numeric_cols:
+    st.bar_chart(df[numeric_cols])
+else:
+    st.text("No numeric columns to chart.")
+
+# Only full access sees the underlying raw rows.
+if ACCESS_LEVEL == "full":
+    st.subheader("Raw data")
+    st.dataframe(df)
+else:
+    st.caption("Raw data view is restricted for this account.")
